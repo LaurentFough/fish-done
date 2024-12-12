@@ -140,7 +140,7 @@ function __done_is_tmux_window_active
 end
 
 function __done_is_screen_window_active
-    string match --quiet --regex "$STY\s+\(Attached" (screen -ls)
+    string match --quiet --regex "$STY\s+\(Attached" ( screen -ls )
 end
 
 function __done_is_process_window_focused
@@ -155,13 +155,13 @@ function __done_is_process_window_focused
         return $status
     end
 
-    set __done_focused_window_id (__done_get_focused_window_id)
+    set __done_focused_window_id ( __done_get_focused_window_id )
     if test "$__done_sway_ignore_visible" -eq 1
         and test -n "$SWAYSOCK"
-        string match --quiet --regex "^true" (swaymsg -t get_tree | jq ".. | objects | select(.id == "$__done_initial_window_id") | .visible")
+        string match --quiet --regex "^true" ( swaymsg -t get_tree | jq ".. | objects | select(.id == "$__done_initial_window_id") | .visible" )
         return $status
     else if test -n "$HYPRLAND_INSTANCE_SIGNATURE"
-        and test $__done_initial_window_id = (hyprctl activewindow | awk 'NR==1 {print $2}')
+        and test $__done_initial_window_id = ( hyprctl activewindow | awk 'NR==1 {print $2}' )
         return $status
     else if test "$__done_initial_window_id" != "$__done_focused_window_id"
         return 1
@@ -184,9 +184,9 @@ function __done_is_process_window_focused
 end
 
 function __done_humanize_duration -a milliseconds
-    set -l seconds (math --scale=0 "$milliseconds/1000" % 60)
-    set -l minutes (math --scale=0 "$milliseconds/60000" % 60)
-    set -l hours (math --scale=0 "$milliseconds/3600000")
+    set -l seconds ( math --scale=0 "$milliseconds/1000" % 60 )
+    set -l minutes ( math --scale=0 "$milliseconds/60000" % 60 )
+    set -l hours ( math --scale=0 "$milliseconds/3600000" )
 
     if test $hours -gt 0
         printf '%s' $hours'h '
@@ -200,8 +200,8 @@ function __done_humanize_duration -a milliseconds
 end
 
 #= verify that the system has graphical capabilities before initializing
-if test -z "$SSH_CLIENT" 																#= not over ssh
-    and count (__done_get_focused_window_id) >/dev/null #= is able to get window id
+if test -z "$SSH_CLIENT" 																	#= not over ssh
+    and count ( __done_get_focused_window_id ) >/dev/null #= is able to get window id
     set __done_enabled
 end
 
@@ -241,19 +241,19 @@ if set -q __done_enabled
             end
 
             #= Store duration of last command
-            set -l humanized_duration (__done_humanize_duration "$cmd_duration")
+            set -l humanized_duration ( __done_humanize_duration "$cmd_duration" )
 
             set -l title "Done in $humanized_duration"
-            set -l wd (string replace --regex "^$HOME" "~" (pwd))
+            set -l wd ( string replace --regex "^$HOME" "~" ( pwd ) )
             set -l message "$wd/ $argv[1]"
             set -l sender $__done_initial_window_id
 
             if test $exit_status -ne 0
-                set title "Failed ($exit_status) after $humanized_duration"
+                set title "Failed ( $exit_status ) after $humanized_duration"
             end
 
             if test -n "$TMUX_PANE"
-                set message (tmux lsw  -F"$__done_tmux_pane_format" -f '#{==:#{pane_id},'$TMUX_PANE'}')" $message"
+                set message ( tmux lsw  -F"$__done_tmux_pane_format" -f '#{==:#{pane_id},'$TMUX_PANE'}' )" $message"
             end
 
             if set -q __done_notification_command
@@ -274,8 +274,8 @@ if set -q __done_enabled
 
             else if type -q osascript # AppleScript
                 #= escape double quotes that might exist in the message and break osascript. fixes #133
-                set -l message (string replace --all '"' '\"' "$message")
-                set -l title (string replace --all '"' '\"' "$title")
+                set -l message ( string replace --all '"' '\"' "$message" )
+                set -l title ( string replace --all '"' '\"' "$title" )
 
                 if test "$__done_notify_sound" -eq 1
                     osascript -e "display notification \"$message\" with title \"$title\" sound name \"Glass\""
